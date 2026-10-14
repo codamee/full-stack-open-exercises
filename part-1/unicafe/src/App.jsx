@@ -1,24 +1,33 @@
 import { useState } from 'react'
 
+const StatisticLine = ({ text, value }) => {
+    return (
+        <tr className=' '>
+            <td className='border p-1 m-2'>{text}</td>
+            <td className='border p-1 m-2'>{value}</td>
+        </tr>
+    )
+}
+
 const Statistics = (props) => {
     const { good, neutral, bad, total, average, positivePercentage } = props
-    return <>
+    return (
         <div>
-            <h1>Statistics</h1>
+            <h1 className='text-blue-800 font-bold p-2 text-xl'>Statistics</h1>
             {
-                total > 0 ?
-                    <div>
-                        <p>good : {good}</p>
-                        <p>neutral : {neutral}</p>
-                        <p>bad : {bad}</p>
-                        <p>all : {total}</p>
-                        <p>average : {average}</p>
-                        <p>positive : {positivePercentage}</p>
-                    </div> :
-                    <div>No Feedback Given</div>
+                total > 0 ? <table>
+                    <tbody className='border'>
+                        <StatisticLine text={"good"} value={good} />
+                        <StatisticLine text={"neutral"} value={neutral} />
+                        <StatisticLine text={"bad"} value={bad} />
+                        <StatisticLine text={"total"} value={total} />
+                        <StatisticLine text={"average"} value={average} />
+                        <StatisticLine text={"positive"} value={positivePercentage} />
+                    </tbody>
+                </table> : <div>No Feedback Given</div>
             }
         </div>
-    </>
+    )
 }
 
 const App = () => {
@@ -43,12 +52,14 @@ const App = () => {
 
     return (
         <>
-            <div>
-                <h1>Good Feedback</h1>
+            <div className='m-5'>
                 <div>
-                    <button onClick={handleGood}>good</button>
-                    <button onClick={handleNeutral}>neutral</button>
-                    <button onClick={handleBad}>bad</button>
+                    <h1 className='text-blue-800 font-bold p-2 text-xl'>Good Feedback</h1>
+                    <div>
+                        <button className='border m-2 p-2' onClick={handleGood}>good</button>
+                        <button className='border m-2 p-2' onClick={handleNeutral}>neutral</button>
+                        <button className='border m-2 p-2' onClick={handleBad}>bad</button>
+                    </div>
                 </div>
                 <Statistics good={good} bad={bad} neutral={neutral} positivePercentage={positivePercentage} total={total} average={average} />
             </div>
