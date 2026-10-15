@@ -13,7 +13,6 @@ const App = () => {
     ]
     const [selected, setSelected] = useState(0)
     const [votes, setVotes] = useState(Array(anecdotes.length).fill(0))
-    const [maxVal, setMaxVal] = useState(0)
 
     const setRandom = () => {
         const randomIndex = Math.floor(Math.random() * anecdotes.length)
