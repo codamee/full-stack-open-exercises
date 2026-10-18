@@ -7,6 +7,13 @@ const Filter = (props) => {
   </div>
 }
 
+const Notification = ({ message }) => {
+  if (message === null) return
+  return <div className='message'>
+    Note: {message}
+  </div>
+}
+
 const PersonForm = ({ handleSubmit, newName, handleName, phoneNum, handlePhoneNum }) => {
   return <form onSubmit={handleSubmit}>
     <div>
@@ -15,7 +22,7 @@ const PersonForm = ({ handleSubmit, newName, handleName, phoneNum, handlePhoneNu
     </div>
     <div>
       <label htmlFor="phno">PhNo : </label>
-      <input type='number' value={phoneNum} onChange={handlePhoneNum} id='phno' required />
+      <input type='number' value={phoneNum} onChange={handlePhoneNum} id='phno' required maxLength={10} />
     </div>
     <div>
       <button type="submit">add</button>
@@ -50,6 +57,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [phoneNum, setPhoneNum] = useState('')
   const [filterName, setFilterName] = useState('')
+  const [message,setMessage] =useState(null)
 
   useEffect(() => {
     axiosService.getAll().then(response => { setPersons(response.data) })
@@ -64,6 +72,12 @@ const App = () => {
       if (check) {
         axiosService.update(existedPerson.id, newNumObj).then((res) => {
           setPersons(prev => prev.map(person => person.id === existedPerson.id ? res.data : person))
+          setMessage(`${res.data.name} Number is updated`)
+          setTimeout(() => {
+            setMessage(null)
+          }, 3000)
+          setNewName('')
+          setPhoneNum('')
         })
       }
       return
@@ -74,6 +88,10 @@ const App = () => {
     }
     axiosService.create(newObj).then(res => {
       setPersons([...persons, res.data])
+      setMessage(`${res.data.name} is Added`)
+      setTimeout(() => {
+        setMessage(null)
+      },3000)
       setNewName('')
       setPhoneNum('')
     })
@@ -85,6 +103,10 @@ const App = () => {
     if (check) {
       axiosService.delPerson(id).then(res => {
         setPersons(persons.filter(item => item.id !== id))
+        setMessage(`${res.data.name} is Deleted`)
+        setTimeout(() => {
+          setMessage(null)
+        }, 3000)
       })
     }
   }
@@ -104,6 +126,7 @@ const App = () => {
     <div>
       <h2>Phonebook :</h2>
       <Filter filterName={filterName} handleFilterName={handleFilterName} />
+      <Notification message={message}/>
 
       <h2>Add a new name :</h2>
       <PersonForm handleSubmit={handleSubmit} newName={newName} handleName={handleName} phoneNum={phoneNum} handlePhoneNum={handlePhoneNum} />
