@@ -8,9 +8,9 @@ const Filter = (props) => {
 }
 
 const Notification = ({ message }) => {
-  if (message === null) return
-  return <div className='message'>
-    Note: {message}
+  if (message === null) return null
+  return <div className={message.type === 'error' ? 'error' : 'message'}>
+    Note: {message.text}
   </div>
 }
 
@@ -57,10 +57,17 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [phoneNum, setPhoneNum] = useState('')
   const [filterName, setFilterName] = useState('')
-  const [message,setMessage] =useState(null)
+  const [message, setMessage] = useState(null)
+
+  const showMessage = (text, type = 'success') => {
+    setMessage({ text, type })
+    setTimeout(() => setMessage(null), 3000)
+  }
 
   useEffect(() => {
-    axiosService.getAll().then(response => { setPersons(response.data) })
+    axiosService.getAll()
+      .then(response => { setPersons(response.data) })
+      .catch(() => showMessage('Failed to load phonebook', 'error'))
   }, [])
 
   const handleSubmit = (e) => {
@@ -69,33 +76,33 @@ const App = () => {
     if (existedPerson) {
       const newNumObj = { ...existedPerson, number: phoneNum }
       const check = window.confirm(`${existedPerson.name} already exist in phonebook.replace the old number with new number`)
+
       if (check) {
         axiosService.update(existedPerson.id, newNumObj).then((res) => {
           setPersons(prev => prev.map(person => person.id === existedPerson.id ? res.data : person))
-          setMessage(`${res.data.name} Number is updated`)
-          setTimeout(() => {
-            setMessage(null)
-          }, 3000)
+          showMessage(`${res.data.name} Number is updated`, "success")
           setNewName('')
           setPhoneNum('')
+        }).catch(() => {
+          showMessage(`${existedPerson.name} was already removed from the server`, 'error')
+          setPersons(prev => prev.filter(p => p.id !== existedPerson.id))
         })
       }
       return
     }
+
     const newObj = {
       name: newName,
       number: phoneNum
     }
     axiosService.create(newObj).then(res => {
       setPersons([...persons, res.data])
-      setMessage(`${res.data.name} is Added`)
-      setTimeout(() => {
-        setMessage(null)
-      },3000)
+      showMessage(`${res.data.name} is Added`)
       setNewName('')
       setPhoneNum('')
-    })
+    }).catch(() => showMessage('Failed to add the person', 'error'))
   }
+
 
   const handleDelete = (id) => {
     const person = persons.find(item => item.id === id)
@@ -103,10 +110,10 @@ const App = () => {
     if (check) {
       axiosService.delPerson(id).then(res => {
         setPersons(persons.filter(item => item.id !== id))
-        setMessage(`${res.data.name} is Deleted`)
-        setTimeout(() => {
-          setMessage(null)
-        }, 3000)
+        showMessage(`${person.name} is Deleted`)
+      }).catch(() => {
+        showMessage(`${person.name} was already removed from the server`, 'error')
+        setPersons(prev => prev.filter(item => item.id !== id))
       })
     }
   }
@@ -121,14 +128,15 @@ const App = () => {
     setFilterName(e.target.value)
   }
 
+
   const filteredNames = persons.length > 0 ? persons.filter(item => item.name.toLowerCase().includes(filterName.toLowerCase())) : []
   return (
     <div>
       <h2>Phonebook :</h2>
       <Filter filterName={filterName} handleFilterName={handleFilterName} />
-      <Notification message={message}/>
 
       <h2>Add a new name :</h2>
+      <Notification message={message} />
       <PersonForm handleSubmit={handleSubmit} newName={newName} handleName={handleName} phoneNum={phoneNum} handlePhoneNum={handlePhoneNum} />
 
       <h2>Numbers</h2>
@@ -137,5 +145,6 @@ const App = () => {
     </div>
   )
 }
+
 
 export default App

@@ -1,24 +1,29 @@
 {
   "persons": [
     {
-      "name": "Ada Lovelace",
-      "number": "39-44-5323523",
-      "id": "2"
+      "name": "naveen",
+      "number": "12345612",
+      "id": "hId9SKDHKC8"
     },
     {
-      "name": "Dan Abramov",
-      "number": "12-43-234345",
-      "id": "3"
+      "name": "johnp",
+      "number": "9876543",
+      "id": "4ztV4S22kT4"
     },
     {
-      "name": "johndoe Doe",
-      "number": "848384833",
-      "id": "IOTCqZhSzFk"
+      "name": "qwert",
+      "number": "9876543",
+      "id": "KColY-e0YF4"
     },
     {
-      "name": "john",
-      "number": "0234567",
-      "id": "dvb2-wOsRcs"
+      "name": "wer",
+      "number": "432",
+      "id": "xKT-xEsCw80"
+    },
+    {
+      "name": "rew",
+      "number": "234",
+      "id": "1BIJy6abWbA"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

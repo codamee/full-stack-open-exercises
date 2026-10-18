@@ -1,7 +1,14 @@
 .message{
-    background-color: lightblue;
+    background-color: lightgreen;
     padding: 10px;
-    border: 1px solid blue;
+    border: 1px solid green;
+    width: fit-content;
+    margin: 5px;
+}
+.error{
+    background-color: lightcoral;
+    padding: 10px;
+    border: 1px solid red;
     width: fit-content;
     margin: 5px;
 }
