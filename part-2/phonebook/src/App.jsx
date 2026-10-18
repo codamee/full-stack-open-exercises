@@ -1,7 +1,6 @@
-import axios from "axios"
-import axiosServie from './services/notes'
-
+import axiosService from './services/notes'
 import { useEffect, useState } from 'react'
+
 const Filter = (props) => {
   return <div>
     Filter by name : <input type="text" value={props.filterName} onChange={props.handleFilterName} />
@@ -45,6 +44,7 @@ const Persons = ({ persons, filteredNames, handleDelete }) => {
     </>
   )
 }
+
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
@@ -52,31 +52,38 @@ const App = () => {
   const [filterName, setFilterName] = useState('')
 
   useEffect(() => {
-    axiosServie.getAll().then(response => { setPersons(response.data) })
+    axiosService.getAll().then(response => { setPersons(response.data) })
   }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const exitstedItem = persons.find(item => item.name.toLowerCase() === newName.toLowerCase())
-    if (exitstedItem) {
-      alert(`${newName} already exists`)
+    const existedPerson = persons.find(item => item.name.toLowerCase() === newName.toLowerCase())
+    if (existedPerson) {
+      const newNumObj = { ...existedPerson, number: phoneNum }
+      const check = window.confirm(`${existedPerson.name} already exist in phonebook.replace the old number with new number`)
+      if (check) {
+        axiosService.update(existedPerson.id, newNumObj).then((res) => {
+          setPersons(prev => prev.map(person => person.id === existedPerson.id ? res.data : person))
+        })
+      }
       return
     }
     const newObj = {
       name: newName,
       number: phoneNum
     }
-    axiosServie.create(newObj).then(res => {
+    axiosService.create(newObj).then(res => {
       setPersons([...persons, res.data])
       setNewName('')
       setPhoneNum('')
     })
   }
+
   const handleDelete = (id) => {
     const person = persons.find(item => item.id === id)
-    const check = confirm(`Delete ${person.name}`)
+    const check = window.confirm(`Delete ${person.name}`)
     if (check) {
-      axiosServie.delPerson(id).then(res => {
+      axiosService.delPerson(id).then(res => {
         setPersons(persons.filter(item => item.id !== id))
       })
     }
@@ -92,7 +99,7 @@ const App = () => {
     setFilterName(e.target.value)
   }
 
-  const filteredNames = persons.filter(item => item.name.toLowerCase().includes(filterName.toLowerCase()))
+  const filteredNames = persons.length > 0 ? persons.filter(item => item.name.toLowerCase().includes(filterName.toLowerCase())) : []
   return (
     <div>
       <h2>Phonebook :</h2>
