@@ -1,4 +1,5 @@
 import axios from "axios"
+import axiosServie from './services/notes'
 
 import { useEffect, useState } from 'react'
 const Filter = (props) => {
@@ -23,7 +24,7 @@ const PersonForm = ({ handleSubmit, newName, handleName, phoneNum, handlePhoneNu
   </form>
 }
 
-const Persons = ({ persons, filteredNames }) => {
+const Persons = ({ persons, filteredNames, handleDelete }) => {
   return (
     <>
       {persons.length <= 0 && <div>No Numbers yet</div>}
@@ -34,7 +35,8 @@ const Persons = ({ persons, filteredNames }) => {
               return <tr key={item.id}>
                 <td>{index + 1}.</td>
                 <td>{item.name}</td>
-                <td>{item.phoneNum}</td>
+                <td>{item.number}</td>
+                <td><button onClick={() => handleDelete(item.id)}>Delete</button></td>
               </tr>
             })}
           </tbody>
@@ -50,9 +52,8 @@ const App = () => {
   const [filterName, setFilterName] = useState('')
 
   useEffect(() => {
-    axios.get("http://localhost:3001/persons").then(response => { setPersons(response.data) })
+    axiosServie.getAll().then(response => { setPersons(response.data) })
   }, [])
-console.log(persons)
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -62,13 +63,23 @@ console.log(persons)
       return
     }
     const newObj = {
-      id: crypto.randomUUID(),
       name: newName,
-      phoneNum: phoneNum
+      number: phoneNum
     }
-    setPersons([...persons, newObj])
-    setNewName('')
-    setPhoneNum('')
+    axiosServie.create(newObj).then(res => {
+      setPersons([...persons, res.data])
+      setNewName('')
+      setPhoneNum('')
+    })
+  }
+  const handleDelete = (id) => {
+    const person = persons.find(item => item.id === id)
+    const check = confirm(`Delete ${person.name}`)
+    if (check) {
+      axiosServie.delPerson(id).then(res => {
+        setPersons(persons.filter(item => item.id !== id))
+      })
+    }
   }
 
   const handleName = (e) => {
@@ -91,7 +102,7 @@ console.log(persons)
       <PersonForm handleSubmit={handleSubmit} newName={newName} handleName={handleName} phoneNum={phoneNum} handlePhoneNum={handlePhoneNum} />
 
       <h2>Numbers</h2>
-      <Persons filteredNames={filteredNames} persons={persons} />
+      <Persons filteredNames={filteredNames} persons={persons} handleDelete={handleDelete} />
 
     </div>
   )
