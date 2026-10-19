@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react"
 import axios from 'axios'
 
-const CountryDetails = ({ filteredList }) => {
-  const coun = filteredList[0]
+const CountryDetails = ({ coun }) => {
   return <div>
     <h1>{coun.name.common}</h1>
     <div>
@@ -25,18 +24,18 @@ const CountryDetails = ({ filteredList }) => {
   </div>
 }
 
-const Filter = ({ filteredList, input, handleShowDetails ,showDetails}) => {
+const Filter = ({ filteredList, input, handleShowDetails }) => {
   if (input.length === 0) {
     return <div>Specify a country name</div>
   }
   else if (filteredList.length === 1) {
-    return <CountryDetails filteredList={filteredList} />
+    return <CountryDetails coun={filteredList[0]} />
   }
   else if (filteredList.length > 1 && filteredList.length <= 10) {
     return (filteredList.map((item, index) => {
-      return <div key={index}>
+      return <div key={item.cca2}>
         <span>{item.name.common}</span> :
-        : <button onClick={handleShowDetails}>Show Details</button>
+        : <button onClick={() => handleShowDetails(item.cca2)}>Show Details</button>
       </div>
     }))
   }
@@ -68,7 +67,11 @@ const App = () => {
     setCountry(input)
   }
 
-  const handleShowDetails = () => setShowDetals(true)
+  const handleShowDetails = (cca2) => {
+    const coun = countriesList.find((item) => item.cca2 === cca2)
+    setShowDetals(true)
+    setCountry(coun)
+  }
   const filteredList = countriesList.filter((item) => item.name.common.toLowerCase().includes(input.toLocaleLowerCase()))
 
   return (
@@ -77,8 +80,19 @@ const App = () => {
         <label htmlFor="country">Find countries : </label>
         <input type="text" id="country" value={input} onChange={handleInput} />
       </form><hr />
-      
-      <Filter filteredList={filteredList} input={input} handleShowDetails={handleShowDetails} showDetails={showDetails} />
+
+      {showDetails ? (
+        <div>
+          <button onClick={() => setShowDetals(null)}>Back to list</button>
+          <CountryDetails coun={country} />
+        </div>
+      ) : (
+        <Filter
+          filteredList={filteredList}
+          handleShowDetails={handleShowDetails}
+          input={input}
+        />
+      )}
     </div>
   )
 }
