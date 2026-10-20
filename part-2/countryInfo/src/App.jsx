@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, act } from "react"
 import axios from 'axios'
 
-const CountryDetails = ({ coun }) => {
+const CountryDetails = ({ coun, weather }) => {
   return <div>
     <h1>{coun.name.common}</h1>
     <div>
@@ -21,15 +21,28 @@ const CountryDetails = ({ coun }) => {
       <h2>Flag</h2>
       <img src={`${coun.flags.png}`} alt="" />
     </div>
+    {weather && weather.main ? (
+      <div>
+        <h2>Weather</h2>
+        <p>Temperature: {weather.main.temp} °C</p>
+        <img
+          src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
+          alt={weather.weather[0].description}
+        />
+        <p>Wind: {weather.wind.speed} m/s</p>
+      </div>
+    ) : (
+      <p>Loading weather...</p>
+    )}
   </div>
 }
 
-const Filter = ({ filteredList, input, handleShowDetails }) => {
+const Filter = ({ filteredList, input, handleShowDetails, weather, activeCountry }) => {
   if (input.length === 0) {
     return <div>Specify a country name</div>
   }
   else if (filteredList.length === 1) {
-    return <CountryDetails coun={filteredList[0]} />
+    return <CountryDetails coun={activeCountry} weather={weather} />
   }
   else if (filteredList.length > 1 && filteredList.length <= 10) {
     return (filteredList.map((item, index) => {
@@ -52,6 +65,7 @@ const App = () => {
   const [country, setCountry] = useState(null)
   const [countriesList, setCountriesList] = useState([])
   const [showDetails, setShowDetals] = useState(false)
+  const [weather, setWeather] = useState({})
 
   useEffect(() => {
     axios.get('https://studies.cs.helsinki.fi/restcountries/api/all')
@@ -60,11 +74,16 @@ const App = () => {
       })
   }, [])
 
+  useEffect(() => {
+    const capital = activeCountry?.capital[0]
+    if (!capital) return
+    axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${capital}&units=metric&appid=${import.meta.env.VITE_WEATHER_API_KEY}`).then(res => {
+      setWeather(res.data)
+    })
+  }, [country])
+
   const handleInput = (event) => {
     setInput(event.target.value)
-  }
-  const handleSubmit = () => {
-    setCountry(input)
   }
 
   const handleShowDetails = (cca2) => {
@@ -73,10 +92,11 @@ const App = () => {
     setCountry(coun)
   }
   const filteredList = countriesList.filter((item) => item.name.common.toLowerCase().includes(input.toLocaleLowerCase()))
-
+  const activeCountry = showDetails ? country :  filteredList[0] 
+  console.log(activeCountry)
   return (
     <div>
-      <form onSubmit={handleSubmit}>
+      <form >
         <label htmlFor="country">Find countries : </label>
         <input type="text" id="country" value={input} onChange={handleInput} />
       </form><hr />
@@ -84,13 +104,15 @@ const App = () => {
       {showDetails ? (
         <div>
           <button onClick={() => setShowDetals(null)}>Back to list</button>
-          <CountryDetails coun={country} />
+          <CountryDetails coun={activeCountry} weather={weather} />
         </div>
       ) : (
         <Filter
           filteredList={filteredList}
           handleShowDetails={handleShowDetails}
           input={input}
+          weather={weather}
+          activeCountry={activeCountry}
         />
       )}
     </div>
